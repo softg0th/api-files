@@ -1,6 +1,8 @@
 import os
 from abc import ABC, abstractmethod
 import shutil
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import List
 
 from dotenv import load_dotenv
@@ -35,12 +37,16 @@ class FileManager(FileManagerTemplate):
         FileManagerTemplate.__init__(self, pwd)
 
     def get_all_user_files(self, user) -> List:
-        user_files = os.listdir(f'{self.pwd}/{user}')
+        try:
+            user_files = os.listdir(f'{self.pwd}/{user}')
+        except FileNotFoundError:
+            return []
         return user_files
 
     def upload_user_file(self, user, file) -> bool:
         try:
-            shutil.move(file, f'{self.pwd}/{user}')
+            with open(os.path.join(f'{self.pwd}/{user}', file.filename), 'wb') as f:
+                shutil.copyfileobj(file.file, f)
         except Exception:
             return False
         return True
@@ -48,15 +54,14 @@ class FileManager(FileManagerTemplate):
     def delete_user_file(self, user, file) -> bool:
         try:
             os.remove(f'{self.pwd}/{user}/{file}')
-        except Exception:
+        except FileNotFoundError:
             return False
         return True
 
     def rename_user_file(self, user, file, new_file) -> bool:
         try:
-            extension = os.path.splitext(file)[1]
-            os.rename(file, f'{new_file}{extension}')
-        except Exception:
+            os.rename(f'{self.pwd}/{user}/{file}', f'{self.pwd}/{user}/{new_file}')
+        except FileNotFoundError:
             return False
         return True
 

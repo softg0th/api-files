@@ -4,7 +4,6 @@ from fastapi import APIRouter, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from api.scripts.file_manager import FileManager
-from api.schemas import User
 
 router = APIRouter(
     prefix="/files",
@@ -14,8 +13,8 @@ router = APIRouter(
 filemanager = FileManager(os.getenv('PWD'))
 
 
-@router.get('/files/{user}')
-def load_file(user: User):
+@router.get('/files/')
+def load_file(user: str):
     user_files = filemanager.get_all_user_files(user)
     if type(user_files) is list:
         return JSONResponse(status_code=200, content=user_files)
@@ -23,7 +22,7 @@ def load_file(user: User):
 
 
 @router.post('/files')
-def upload_file(user: User, file: UploadFile):
+def upload_file(user: str, file: UploadFile):
     file_marker = filemanager.upload_user_file(user, file)
     if file_marker:
         return JSONResponse(status_code=200, content='success')
@@ -31,7 +30,7 @@ def upload_file(user: User, file: UploadFile):
 
 
 @router.delete('/files')
-def delete_file(user: User, file: UploadFile):
+def delete_file(user: str, file: str):
     file_marker = filemanager.delete_user_file(user, file)
     if file_marker:
         return JSONResponse(status_code=200, content='success')
@@ -39,8 +38,8 @@ def delete_file(user: User, file: UploadFile):
 
 
 @router.post('/files/rename')
-def rename_file(user: User, file: UploadFile, new_file):
-    file_marker = filemanager.rename_user_file(user, file, new_file)
+def rename_file(user: str, old_file_name: str, new_file_name: str):
+    file_marker = filemanager.rename_user_file(user, old_file_name, new_file_name)
     if file_marker:
         return JSONResponse(status_code=200, content='success')
     raise HTTPException(status_code=404, detail='exception')
