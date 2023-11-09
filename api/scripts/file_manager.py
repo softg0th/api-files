@@ -1,4 +1,5 @@
 import os
+import subprocess
 from abc import ABC, abstractmethod
 import shutil
 from pathlib import Path
@@ -45,6 +46,14 @@ class FileManager(FileManagerTemplate):
 
     def upload_user_file(self, user, file) -> bool:
         try:
+            users = os.listdir(self.pwd)
+            user_in_dir = False
+            for us in users:
+                if us == str(user):
+                    user_in_dir = True
+                    break
+            if not user_in_dir:
+                subprocess.run(['mkdir', f'{self.pwd}\\{str(user)}'], shell=True)
             with open(os.path.join(f'{self.pwd}/{user}', file.filename), 'wb') as f:
                 shutil.copyfileobj(file.file, f)
         except Exception:
