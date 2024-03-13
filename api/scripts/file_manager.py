@@ -49,6 +49,12 @@ class FileManager(FileManagerTemplate):
         return user_files
 
     def upload_user_file(self, user, file) -> bool:
+        def get_content_after_last_slash(input_string):
+            last_slash_index = input_string.rfind('/')
+            if last_slash_index != -1:
+                content_after_last_slash = input_string[last_slash_index + 1:]
+                return content_after_last_slash
+
         try:
             users = os.listdir(self.pwd)
             user_in_dir = False
@@ -58,9 +64,11 @@ class FileManager(FileManagerTemplate):
                     break
             if not user_in_dir:
                 subprocess.run(['mkdir', f'{self.pwd}\\{str(user)}'], shell=True)
-            with open(os.path.join(f'{self.pwd}/{user}', file.filename), 'wb') as f:
-                shutil.copyfileobj(file.file, f)
-        except Exception:
+            file.filename = get_content_after_last_slash(file.filename)
+            with open(f'{self.pwd}\\{str(user)}\\{file.filename}', 'wb') as f:
+                f.write(file.file.read())
+        except Exception as e:
+            print(f"An error occurred: {e}")
             return False
         return True
 
