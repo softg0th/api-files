@@ -43,3 +43,11 @@ def rename_file(user: str, old_file_name: str, new_file_name: str):
     if file_marker:
         return JSONResponse(status_code=200, content='success')
     raise HTTPException(status_code=404, detail='exception')
+
+
+@router.get('/files/load/')
+def load_user_file(user: str, file_name: str):
+    file_data, part = filemanager.load_user_file(user, file_name)
+    if file_data and part:
+        return JSONResponse(status_code=200, content={'file_binary_data': file_data, 'file_part': part})
+    raise HTTPException(status_code=404, detail='exception')

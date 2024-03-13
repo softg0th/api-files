@@ -32,6 +32,10 @@ class FileManagerTemplate(ABC):
     def rename_user_file(self, user, file, new_file):
         pass
 
+    @abstractmethod
+    def load_user_file(self, user_id, file_name):
+        pass
+
 
 class FileManager(FileManagerTemplate):
     def __init__(self, pwd):
@@ -74,3 +78,12 @@ class FileManager(FileManagerTemplate):
             return False
         return True
 
+    def load_user_file(self, user_id, file_name):
+        part = 1
+        for part in range(3):
+            try:
+                with open(f'{self.pwd}/{user_id}/{file_name}.{part}') as f:
+                    file_data = f.read()
+            except FileNotFoundError:
+                pass
+        return file_data, part
