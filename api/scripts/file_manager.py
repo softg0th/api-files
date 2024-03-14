@@ -1,3 +1,4 @@
+import base64
 import os
 import subprocess
 from abc import ABC, abstractmethod
@@ -87,11 +88,14 @@ class FileManager(FileManagerTemplate):
         return True
 
     def load_user_file(self, user_id, file_name):
-        part = 1
+        part = 0
+        file_data = None
         for part in range(3):
             try:
-                with open(f'{self.pwd}/{user_id}/{file_name}.{part}') as f:
+                with open(f'{self.pwd}\\{user_id}\\{file_name}.{part}', 'rb') as f:
                     file_data = f.read()
+                    file_data = base64.b64encode(file_data).decode('utf-8')
+                    break
             except FileNotFoundError:
                 pass
         return file_data, part
