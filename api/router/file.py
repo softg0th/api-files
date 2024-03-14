@@ -48,6 +48,6 @@ def rename_file(user: str, old_file_name: str, new_file_name: str):
 @router.get('/files/load/')
 def load_user_file(user: str, file_name: str):
     file_data, part = filemanager.load_user_file(user, file_name)
-    if file_data and part:
+    if file_data:
         return JSONResponse(status_code=200, content={'file_binary_data': file_data, 'file_part': part})
     raise HTTPException(status_code=404, detail='exception')
