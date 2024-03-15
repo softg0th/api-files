@@ -11,10 +11,12 @@ im = InfoManager()
 
 
 @router.get("/space")
-def get_left_space():
-    return im.current_left_space()
+async def get_left_space():
+    current_left_space = await im.current_left_space()
+    return current_left_space
 
 
 @router.get("/vm")
-def is_vm():
-    return im.is_vm()
+async def is_vm():
+    is_vm = await im.is_vm()
+    return is_vm
