@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 import subprocess
 from abc import ABC, abstractmethod
@@ -18,23 +19,23 @@ class FileManagerTemplate(ABC):
         self.pwd = pwd
 
     @abstractmethod
-    def get_all_user_files(self, user):
+    async def get_all_user_files(self, user):
         pass
 
     @abstractmethod
-    def upload_user_file(self, user, file):
+    async def upload_user_file(self, user, file):
         pass
 
     @abstractmethod
-    def delete_user_file(self, user, file):
+    async def delete_user_file(self, user, file):
         pass
 
     @abstractmethod
-    def rename_user_file(self, user, file, new_file):
+    async def rename_user_file(self, user, file, new_file):
         pass
 
     @abstractmethod
-    def load_user_file(self, user_id, file_name):
+    async def load_user_file(self, user_id, file_name):
         pass
 
 
@@ -42,14 +43,14 @@ class FileManager(FileManagerTemplate):
     def __init__(self, pwd):
         FileManagerTemplate.__init__(self, pwd)
 
-    def get_all_user_files(self, user) -> List:
+    async def get_all_user_files(self, user_id) -> List:
         try:
-            user_files = os.listdir(f'{self.pwd}/{user}')
+            user_files = os.listdir(f'{self.pwd}/{user_id}')
         except FileNotFoundError:
             return []
         return user_files
 
-    def upload_user_file(self, user, file) -> bool:
+    async def upload_user_file(self, user_id, file) -> bool:
         def get_content_after_last_slash(input_string):
             last_slash_index = input_string.rfind('/')
             if last_slash_index != -1:
@@ -59,43 +60,43 @@ class FileManager(FileManagerTemplate):
         try:
             users = os.listdir(self.pwd)
             user_in_dir = False
-            for us in users:
-                if us == str(user):
+            for user in users:
+                if user == str(user_id):
                     user_in_dir = True
                     break
             if not user_in_dir:
-                subprocess.run(['mkdir', f'{self.pwd}\\{str(user)}'], shell=True)
+                subprocess.run(['mkdir', f'{self.pwd}\\{str(user_id)}'], shell=True)
             file.filename = get_content_after_last_slash(file.filename)
-            with open(f'{self.pwd}\\{str(user)}\\{file.filename}', 'wb') as f:
+            with open(f'{self.pwd}\\{str(user_id)}\\{file.filename}', 'wb') as f:
                 f.write(file.file.read())
-        except Exception as e:
-            print(f"An error occurred: {e}")
+        except Exception as ex:
+            logging.info(f"An error occurred: {ex}")
             return False
         return True
 
-    def delete_user_file(self, user, file) -> bool:
+    async def delete_user_file(self, user_id, file) -> bool:
         try:
-            os.remove(f'{self.pwd}/{user}/{file}')
+            os.remove(f'{self.pwd}/{user_id}/{file}')
         except FileNotFoundError:
             return False
         return True
 
-    def rename_user_file(self, user, file, new_file) -> bool:
+    async def rename_user_file(self, user_id, file_name, new_file_name) -> bool:
         try:
-            os.rename(f'{self.pwd}/{user}/{file}', f'{self.pwd}/{user}/{new_file}')
+            os.rename(f'{self.pwd}/{user_id}/{file_name}', f'{self.pwd}/{user_id}/{new_file_name}')
         except FileNotFoundError:
             return False
         return True
 
-    def load_user_file(self, user_id, file_name):
-        part = 0
+    async def load_user_file(self, user_id, file_name):
+        position = 0
         file_data = None
-        for part in range(3):
+        for position in range(3):
             try:
-                with open(f'{self.pwd}\\{user_id}\\{file_name}.{part}', 'rb') as f:
+                with open(f'{self.pwd}\\{user_id}\\{file_name}.{position}', 'rb') as f:
                     file_data = f.read()
                     file_data = base64.b64encode(file_data).decode('utf-8')
                     break
             except FileNotFoundError:
                 pass
-        return file_data, part
+        return file_data, position
